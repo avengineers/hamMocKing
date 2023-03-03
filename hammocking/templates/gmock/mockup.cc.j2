@@ -1,6 +1,6 @@
 #include "mockup{{suffix}}.h"
 
-class_mockup *mockup_global_ptr = 0;
+mock_ptr_t mockup_global_ptr = nullptr;
 
 {% for variable in variables %}
 {% if variable.is_constant() %}
@@ -15,12 +15,12 @@ extern "C" {
 
 {{function.get_signature()}}{
 {% if function.has_return_value() %}
-    if(0 != mockup_global_ptr)
+    if(mockup_global_ptr)
         return mockup_global_ptr->{{function.get_call()}};
     else
         return {{function.default_return()}};
 {% else %}
-    if(0 != mockup_global_ptr)
+    if(mockup_global_ptr)
         mockup_global_ptr->{{function.get_call()}};
 {% endif %}
 } /* {{function.name}} */
