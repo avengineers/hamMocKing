@@ -35,3 +35,10 @@ void b_step(void){
     
     local_extern(2);
 }
+
+int x1 = 1;
+
+int get_x1(void)
+{
+   return x1;
+}
