@@ -1,12 +1,12 @@
 #include "mockup.h"
 
-class_mockup *mockup_global_ptr = 0;
+mock_ptr_t mockup_global_ptr = nullptr;
 
 
 extern "C" {
 
 void set_some_int(int some_value){
-    if(0 != mockup_global_ptr)
+    if(mockup_global_ptr)
         mockup_global_ptr->set_some_int(some_value);
 } /* set_some_int */
 }
