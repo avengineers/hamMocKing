@@ -1,12 +1,12 @@
 #include "mockup.h"
 
-class_mockup *mockup_global_ptr = 0;
+mock_ptr_t mockup_global_ptr = nullptr;
 
 
 extern "C" {
 
 int a_get_y2(){
-    if(0 != mockup_global_ptr)
+    if(mockup_global_ptr)
         return mockup_global_ptr->a_get_y2();
     else
         return (int)0;

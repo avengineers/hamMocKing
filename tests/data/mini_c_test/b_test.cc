@@ -17,7 +17,7 @@ TEST(b_test, TestSignalChain_1)
 
 TEST(b_test, TestSignalChain_2)
 {
-  CREATE_MOCK(mymock);
+  LOCAL_MOCK(mymock);
   EXPECT_CALL(mymock, a_get_y2()).WillRepeatedly(Return(13));
   EXPECT_CALL(mymock, c_set_u2(13));
   b_step();
@@ -25,7 +25,7 @@ TEST(b_test, TestSignalChain_2)
 
 TEST(b_test, TestSignalChain_3)
 {
-  CREATE_MOCK(mymock);
+  LOCAL_MOCK(mymock);
   EXPECT_CALL(mymock, a_get_y3_and_set_u5(_)).WillRepeatedly(Return(13));
   EXPECT_CALL(mymock, c_set_u3_and_u4(13, _));
   b_step();
@@ -33,7 +33,7 @@ TEST(b_test, TestSignalChain_3)
 
 TEST(b_test, TestSignalChain_4)
 {
-  CREATE_MOCK(mymock);
+  LOCAL_MOCK(mymock);
   a_y4 = 13;
   EXPECT_CALL(mymock, c_set_u3_and_u4(_, 13));
   b_step();
@@ -41,7 +41,7 @@ TEST(b_test, TestSignalChain_4)
 
 TEST(b_test, TestSignalChain_5)
 {
-  CREATE_MOCK(mymock);
+  LOCAL_MOCK(mymock);
   EXPECT_CALL(mymock, a_get_y5())
       .WillOnce(Return(13));
   EXPECT_CALL(mymock, c_get_y3_and_set_u5(13));
@@ -50,7 +50,7 @@ TEST(b_test, TestSignalChain_5)
 
 TEST(b_test, TestSignalChain_6)
 {
-  CREATE_MOCK(mymock);
+  LOCAL_MOCK(mymock);
   EXPECT_CALL(mymock, a_get_y6(_))
       .WillOnce(SetArgPointee<0>(13));
   EXPECT_CALL(mymock, c_set_u6(13));

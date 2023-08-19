@@ -6,14 +6,23 @@
 extern "C" {
 } /* extern "C" */
 
+class class_mockup;
+typedef class_mockup* mock_ptr_t;
+extern mock_ptr_t mockup_global_ptr;
+
 class class_mockup {
 
-   public:
-      MOCK_METHOD((void), set_some_int, (int));
+ public:
+   class_mockup()  { mockup_global_ptr = this; }
+   ~class_mockup() { mockup_global_ptr = nullptr; }
+   MOCK_METHOD((void), set_some_int, (int));
 }; /* class_mockup */
 
-extern class_mockup *mockup_global_ptr;
+/* Version A: Create a local object that is destroyed when out of scope */
+#define LOCAL_MOCK(name)   class_mockup name
 
-#define CREATE_MOCK(name)   class_mockup name; mockup_global_ptr = &name;
+/* Version B: Allocate an object that will be only explicitly deallocated */
+#define CREATE_MOCK()     new class_mockup                                                                                                       
+#define DESTROY_MOCK()    {if(mockup_global_ptr) delete mockup_global_ptr;}
 
 #endif /* mockup_h */
