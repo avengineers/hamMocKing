@@ -65,12 +65,12 @@ class RenderableType:
             or self.t.kind == TypeKind.INCOMPLETEARRAY \
             or self.t.kind == TypeKind.VARIABLEARRAY \
             or self.t.kind == TypeKind.DEPENDENTSIZEDARRAY
-    
+
     @property
     def is_struct(self) -> bool:
         fields = list(self.t.get_canonical().get_fields())
         return len(fields) > 0
-    
+
     def initializer(self) -> str:
         if self.is_struct:
             return f"({self.spelling}){{0}}"
@@ -96,9 +96,9 @@ class ConfigReader:
             return
         config = configparser.ConfigParser()
         config.read_string(configfile.read_text())
-		# Read generic settings
+        # Read generic settings
         self._scan(config.items(section=self.section))
-		# Read OS-specific settings
+        # Read OS-specific settings
         self._scan(config.items(section=f"{self.section}.{sys.platform}"))
 
     def _scan(self, items: Iterator[Tuple[str, str]]) -> None:
@@ -132,13 +132,13 @@ class Variable:
             return self._type.render(self.name)
         else:
             return self.name
-        
+
     def is_constant(self) -> bool:
         """Is constant qualified"""
         return self._type.is_constant
-    
+
     def initializer(self) -> str:
-        """C expression to represent the value "0" according to the variable type"""        
+        """C expression to represent the value "0" according to the variable type"""
         return self._type.initializer()
 
     def __repr__(self) -> str:
