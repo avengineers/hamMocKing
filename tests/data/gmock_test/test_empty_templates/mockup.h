@@ -18,10 +18,10 @@ class class_mockup {
 }; /* class_mockup */
 
 /* Version A: Create a local object that is destroyed when out of scope */
-#define LOCAL_MOCK(name)   class_mockup name
+#define CREATE_MOCK(name)   class_mockup name
 
 /* Version B: Allocate an object that will be only explicitly deallocated */
-#define CREATE_MOCK()     new class_mockup                                                                                                       
-#define DESTROY_MOCK()    {if(mockup_global_ptr) delete mockup_global_ptr;}
+#define CREATE_PERSISTENT_MOCK()     new class_mockup
+#define DESTROY_PERSISTENT_MOCK()    {if(mockup_global_ptr) delete mockup_global_ptr;}
 
 #endif /* mockup_h */

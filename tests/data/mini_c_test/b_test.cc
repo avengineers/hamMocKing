@@ -17,7 +17,7 @@ TEST(b_test, TestSignalChain_1)
 
 TEST(b_test, TestSignalChain_2)
 {
-  LOCAL_MOCK(mymock);
+  CREATE_MOCK(mymock);
   EXPECT_CALL(mymock, a_get_y2()).WillRepeatedly(Return(13));
   EXPECT_CALL(mymock, c_set_u2(13));
   b_step();
@@ -25,7 +25,7 @@ TEST(b_test, TestSignalChain_2)
 
 TEST(b_test, TestSignalChain_3)
 {
-  LOCAL_MOCK(mymock);
+  CREATE_MOCK(mymock);
   EXPECT_CALL(mymock, a_get_y3_and_set_u5(_)).WillRepeatedly(Return(13));
   EXPECT_CALL(mymock, c_set_u3_and_u4(13, _));
   b_step();
@@ -35,12 +35,12 @@ TEST(b_test, TestSignalChain_3)
 
 class B : public Test {
   void SetUp() override {
-     mock = CREATE_MOCK();   // Create the mock handle in the fixture
+     mock = CREATE_PERSISTENT_MOCK();   // Create the mock handle in the fixture
      // Now some generic reactions can be set up
      ON_CALL(*mock, a_get_y5).WillByDefault(Return(13));
   }
   void TearDown() override {
-     DESTROY_MOCK();  // Tear down the mock handle to finalize its expecations
+     DESTROY_PERSISTENT_MOCK();  // Tear down the mock handle to finalize its expecations
   }
   
 protected:
