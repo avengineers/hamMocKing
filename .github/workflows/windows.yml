@@ -19,6 +19,12 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
 
+      - name: Install CMake
+        run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' --yes
+
+      - name: Install Ninja
+        run: choco install ninja --yes
+
       - name: install tools, run selftests and create package (w/o deploying)
-        run: .\build.ps1 -installMandatory
+        run: .\build.ps1
         shell: powershell

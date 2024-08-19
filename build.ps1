@@ -1,32 +1,34 @@
-<#
-.DESCRIPTION
-    Wrapper for installing dependencies, running and testing the project
-
-.Notes
-On Windows, it may be required to enable this script by setting the execution
-policy for the user. You can do this by issuing the following PowerShell command:
-
-PS C:\> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-For more information on Execution Policies: 
-https://go.microsoft.com/fwlink/?LinkID=135170
-#>
-
 param(
-    [switch]$installMandatory ## install mandatory packages (e.g., CMake, Ninja, ...)
+    [Parameter(Mandatory = $false, HelpMessage = 'Clean build, wipe out all build artifacts. (Switch, default: false)')]
+    [switch]$clean = $false,
+    [Parameter(Mandatory = $false, HelpMessage = 'Install all dependencies required to build. (Switch, default: false)')]
+    [switch]$install = $false
 )
 
-$ErrorActionPreference = "Stop"
-
-# Needed on Jenkins, somehow the env var PATH is not updated automatically
-# after tool installations by scoop
-Function ReloadEnvVars () {
-    $Env:Path = [System.Environment]::GetEnvironmentVariable("Path", "User") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+function Test-RunningInCIorTestEnvironment {
+    return [Boolean]($Env:JENKINS_URL -or $Env:PYTEST_CURRENT_TEST -or $Env:GITHUB_ACTIONS)
 }
 
-Function ScoopInstall ([string[]]$Packages) {
-    Invoke-CommandLine -CommandLine "scoop install $Packages"
-    ReloadEnvVars
+function Invoke-Bootstrap {
+    # Download bootstrap scripts from external repository
+    Invoke-RestMethod https://raw.githubusercontent.com/avengineers/bootstrap-installer/v1.6.0/install.ps1 | Invoke-Expression
+    # Execute bootstrap script
+    . .\.bootstrap\bootstrap.ps1
+}
+
+Function Remove-Path {
+    param (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$path
+    )
+    if (Test-Path -Path $path -PathType Container) {
+        Write-Output "Deleting directory '$path' ..."
+        Remove-Item $path -Force -Recurse
+    }
+    elseif (Test-Path -Path $path -PathType Leaf) {
+        Write-Output "Deleting file '$path' ..."
+        Remove-Item $path -Force
+    }
 }
 
 Function Invoke-CommandLine {
@@ -52,44 +54,37 @@ Function Invoke-CommandLine {
     }
 }
 
-Push-Location $PSScriptRoot
 
+## start of script
+# Always set the $InformationPreference variable to "Continue" globally, this way it gets printed on execution and continues execution afterwards.
+$InformationPreference = "Continue"
+
+# Stop on first error
+$ErrorActionPreference = "Stop"
+
+Push-Location $PSScriptRoot
 Write-Output "Running in ${pwd}"
 
-if ($installMandatory) {
-    if (-Not (Get-Command scoop -errorAction SilentlyContinue)) {
-        # Initial Scoop installation
-        iwr get.scoop.sh -outfile 'install.ps1'
-        if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-            & .\install.ps1 -RunAsAdmin
-        } else {
-            & .\install.ps1
-        }
-        ReloadEnvVars
+try {
+    # clean build
+    if ($clean) {
+        Remove-Path "build"
+        Remove-Path ".venv"
     }
 
-    # Necessary for 7zip installation, failed on Jenkins for unknown reason. See those issues:
-    # https://github.com/ScoopInstaller/Scoop/issues/460
-    # https://github.com/ScoopInstaller/Scoop/issues/4024
-    ScoopInstall('lessmsi')
-    Invoke-CommandLine -CommandLine "scoop config MSIEXTRACT_USE_LESSMSI $true"
-    # Default installer tools, e.g., dark is required for python
-    ScoopInstall('7zip', 'innounp', 'dark')
-    Invoke-CommandLine -CommandLine "scoop bucket add extras" -StopAtError $false
-    Invoke-CommandLine -CommandLine "scoop bucket add versions" -StopAtError $false
+    # bootstrap environment
+    Invoke-Bootstrap
 
-    Invoke-CommandLine -CommandLine "scoop update"
-    ScoopInstall(Get-Content 'install-mandatory.list')
-    $PipInstaller = "python -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org"
-    Invoke-CommandLine -CommandLine "$PipInstaller pipenv wheel"
-    ReloadEnvVars
-    Invoke-CommandLine -CommandLine "$PipInstaller --upgrade pip"
-    ReloadEnvVars
+    # Run poetry commands within the virtual environment
+    Invoke-CommandLine -CommandLine ".\.venv\Scripts\poetry install --no-dev"
+    Invoke-CommandLine -CommandLine ".\.venv\Scripts\poetry run python -m pytest --verbose --capture=tee-sys"
+    Invoke-CommandLine -CommandLine ".\.venv\Scripts\poetry build"
+    Invoke-CommandLine -CommandLine ".\.venv\Scripts\poetry run make --directory doc html"
 }
-
-Invoke-CommandLine -CommandLine "pipenv install --deploy --dev"
-Invoke-CommandLine -CommandLine "pipenv run python -m pytest --verbose --capture=tee-sys"
-Invoke-CommandLine -CommandLine "pipenv run python -m build"
-Invoke-CommandLine -CommandLine "pipenv run make --directory doc html"
-
-Pop-Location
+finally {
+    Pop-Location
+    if (-Not (Test-RunningInCIorTestEnvironment)) {
+        Read-Host -Prompt "Press Enter to continue ..."
+    }
+}
+## end of script

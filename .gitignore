@@ -13,3 +13,5 @@ __pycache__/
 
 # PyCharm generated project folder
 .idea
+
+/.venv
