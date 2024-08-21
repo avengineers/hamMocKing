@@ -81,15 +81,13 @@ if ($installMandatory) {
     Invoke-CommandLine -CommandLine "scoop update"
     ScoopInstall(Get-Content 'install-mandatory.list')
     $PipInstaller = "python -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org"
-    Invoke-CommandLine -CommandLine "$PipInstaller pipenv wheel"
-    ReloadEnvVars
-    Invoke-CommandLine -CommandLine "$PipInstaller --upgrade pip"
+    Invoke-CommandLine -CommandLine "$PipInstaller poetry"
     ReloadEnvVars
 }
 
-Invoke-CommandLine -CommandLine "pipenv install --deploy --dev"
-Invoke-CommandLine -CommandLine "pipenv run python -m pytest --verbose --capture=tee-sys"
-Invoke-CommandLine -CommandLine "pipenv run python -m build"
-Invoke-CommandLine -CommandLine "pipenv run make --directory doc html"
+Invoke-CommandLine -CommandLine "poetry install"
+Invoke-CommandLine -CommandLine "poetry run python -m pytest --verbose --capture=tee-sys"
+Invoke-CommandLine -CommandLine "poetry build"
+Invoke-CommandLine -CommandLine "poetry run make --directory doc html"
 
 Pop-Location

@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "hammocking"
+version = "0.4.0"
+description = "Create mocks for c-code automatically"
+authors = ["Avengineers <avengineers@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+libclang = "^14.0.6"
+sphinx = "*"
+jinja2 = "^3.1.2"
+
+# Add your dependencies here, converted from your requirements.txt
+# For example:
+flask = "^2.1.2"
+requests = "^2.26.0"
+# ... other dependencies
+sphinxcontrib-plantuml = "^0.30"
+sphinx-rtd-theme = "^2.0.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.2" # Example dev dependency, update as needed
+pytest-env = "^0.8.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

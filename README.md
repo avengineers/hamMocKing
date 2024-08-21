@@ -10,28 +10,22 @@ Automatic mocking tool for C
 
 ## Build
 
-This project uses [Pipenv](https://pypi.org/project/pipenv/). Run the following command to install it using your system's Python >=3.6 installation:
+This project uses [poetry](https://pypi.org/project/poetry/). Run the following command to install it using your system's Python >=3.6 installation:
 
 ```shell
-pip install pipenv
+pip install poetry
 ```
 
 To create a virtual environment for development run:
 
 ```shell
-pipenv install --dev
-```
-
-To delete the currently used virtual environment run:
-
-```shell
-pipenv --rm
+poetry install
 ```
 
 To debug your Python code in VS Code you need to activate the virtual environment. To activate this project's virtualenv, run:
 
 ```shell
-pipenv shell
+poetry shell
 ```
 
 After that you can select the virtual env in the list of Python installations.
@@ -39,7 +33,7 @@ After that you can select the virtual env in the list of Python installations.
 Run all tests:
 
 ```shell
-pipenv run pytest --verbose --capture=tee-sys
+poetry run pytest --verbose --capture=tee-sys
 ```
 
 TODO: Somehow pytest fails when already installed in the system's python distribution. Uninstall it:
