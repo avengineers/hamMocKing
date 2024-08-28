@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Usage &mdash; HammocKing  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
     <link rel="canonical" href="https://avengineers.github.io/hammocking/usage.html" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
@@ -30,11 +32,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> HammocKing
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            HammocKing
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -78,7 +84,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Usage</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/usage.rst.txt" rel="nofollow"> View page source</a>
@@ -96,9 +102,9 @@
 <p>Before we integrate it into the build chain of your choice it is a good idea to call it on the command line
 in order to gather more understanding what it does and what it needs.</p>
 <p>Let’s call hammocking without any arguments:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ python -m hammocking
-usage: hammocking <span class="o">[</span>-h<span class="o">]</span> <span class="o">(</span>--symbols SYMBOLS <span class="o">[</span>SYMBOLS ...<span class="o">]</span> <span class="p">|</span> --plink PLINK<span class="o">)</span> --outdir OUTDIR --sources SOURCES <span class="o">[</span>SOURCES ...<span class="o">]</span> <span class="o">[</span>--except EXCLUDES ...<span class="o">]</span>
-hammocking: error: the following arguments are required: --outdir/-o, --sources
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>hammocking
+usage:<span class="w"> </span>hammocking<span class="w"> </span><span class="o">[</span>-h<span class="o">]</span><span class="w"> </span><span class="o">(</span>--symbols<span class="w"> </span>SYMBOLS<span class="w"> </span><span class="o">[</span>SYMBOLS<span class="w"> </span>...<span class="o">]</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>--plink<span class="w"> </span>PLINK<span class="o">)</span><span class="w"> </span>--outdir<span class="w"> </span>OUTDIR<span class="w"> </span>--sources<span class="w"> </span>SOURCES<span class="w"> </span><span class="o">[</span>SOURCES<span class="w"> </span>...<span class="o">]</span><span class="w"> </span><span class="o">[</span>--except<span class="w"> </span>EXCLUDES<span class="w"> </span>...<span class="o">]</span>
+hammocking:<span class="w"> </span>error:<span class="w"> </span>the<span class="w"> </span>following<span class="w"> </span>arguments<span class="w"> </span>are<span class="w"> </span>required:<span class="w"> </span>--outdir/-o,<span class="w"> </span>--sources
 </pre></div>
 </div>
 <p>hammocking needs …</p>
