@@ -1,93 +1,117 @@
 <#
 .DESCRIPTION
     Wrapper for installing dependencies, running and testing the project
-
-.Notes
-On Windows, it may be required to enable this script by setting the execution
-policy for the user. You can do this by issuing the following PowerShell command:
-
-PS C:\> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-For more information on Execution Policies: 
-https://go.microsoft.com/fwlink/?LinkID=135170
 #>
 
 param(
-    [switch]$installMandatory ## install mandatory packages (e.g., CMake, Ninja, ...)
+    [switch]$clean ## clean build, wipe out all build artifacts
+    , [switch]$install ## install mandatory packages
 )
 
-$ErrorActionPreference = "Stop"
-
-# Needed on Jenkins, somehow the env var PATH is not updated automatically
-# after tool installations by scoop
-Function ReloadEnvVars () {
-    $Env:Path = [System.Environment]::GetEnvironmentVariable("Path", "User") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "Machine")
-}
-
-Function ScoopInstall ([string[]]$Packages) {
-    Invoke-CommandLine -CommandLine "scoop install $Packages"
-    ReloadEnvVars
-}
-
-Function Invoke-CommandLine {
+function Invoke-CommandLine {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingInvokeExpression', '', Justification = 'Usually this statement must be avoided (https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/avoid-using-invoke-expression?view=powershell-7.3), here it is OK as it does not execute unknown code.')]
     param (
+        [Parameter(Mandatory = $true, Position = 0)]
         [string]$CommandLine,
+        [Parameter(Mandatory = $false, Position = 1)]
         [bool]$StopAtError = $true,
+        [Parameter(Mandatory = $false, Position = 2)]
+        [bool]$PrintCommand = $true,
+        [Parameter(Mandatory = $false, Position = 3)]
         [bool]$Silent = $false
     )
-    if (-Not $Silent) {
-        Write-Host "Executing: $CommandLine"
+    if ($PrintCommand) {
+        Write-Output "Executing: $CommandLine"
     }
-    Invoke-Expression $CommandLine
-    if ($LASTEXITCODE -ne 0) {
+    $global:LASTEXITCODE = 0
+    if ($Silent) {
+        # Omit information stream (6) and stdout (1)
+        Invoke-Expression $CommandLine 6>&1 | Out-Null
+    }
+    else {
+        Invoke-Expression $CommandLine
+    }
+    if ($global:LASTEXITCODE -ne 0) {
         if ($StopAtError) {
-            Write-Error "Command line call `"$CommandLine`" failed with exit code $LASTEXITCODE"
-            exit 1
+            Write-Error "Command line call `"$CommandLine`" failed with exit code $global:LASTEXITCODE"
         }
         else {
-            if (-Not $Silent) {
-                Write-Host "Command line call `"$CommandLine`" failed with exit code $LASTEXITCODE, continuing ..."
-            }
+            Write-Output "Command line call `"$CommandLine`" failed with exit code $global:LASTEXITCODE, continuing ..."
         }
     }
 }
+
+# Update/Reload current environment variable PATH with settings from registry
+function Initialize-EnvPath {
+    # workaround for system-wide installations
+    if ($Env:USER_PATH_FIRST) {
+        $Env:Path = [System.Environment]::GetEnvironmentVariable("Path", "User") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+    }
+    else {
+        $Env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    }
+}
+
+function Test-RunningInCIorTestEnvironment {
+    return [Boolean]($Env:JENKINS_URL -or $Env:PYTEST_CURRENT_TEST -or $Env:GITHUB_ACTIONS)
+}
+
+function Invoke-Bootstrap {
+    # Download bootstrap scripts from external repository
+    Invoke-RestMethod https://raw.githubusercontent.com/avengineers/bootstrap-installer/v1.13.0/install.ps1 | Invoke-Expression
+    # Execute bootstrap script
+    . .\.bootstrap\bootstrap.ps1
+}
+
+function Remove-Path {
+    param (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$path
+    )
+    if (Test-Path -Path $path -PathType Container) {
+        Write-Output "Deleting directory '$path' ..."
+        Remove-Item $path -Force -Recurse
+    }
+    elseif (Test-Path -Path $path -PathType Leaf) {
+        Write-Output "Deleting file '$path' ..."
+        Remove-Item $path -Force
+    }
+}
+
+## start of script
+# Always set the $InformationPreference variable to "Continue" globally,
+# this way it gets printed on execution and continues execution afterwards.
+$InformationPreference = "Continue"
+
+# Stop on first error
+$ErrorActionPreference = "Stop"
 
 Push-Location $PSScriptRoot
-
 Write-Output "Running in ${pwd}"
 
-if ($installMandatory) {
-    if (-Not (Get-Command scoop -errorAction SilentlyContinue)) {
-        # Initial Scoop installation
-        iwr get.scoop.sh -outfile 'install.ps1'
-        if ((New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-            & .\install.ps1 -RunAsAdmin
-        } else {
-            & .\install.ps1
+try {
+    if ($install) {
+        if ($clean) {
+            Remove-Path ".venv"
         }
-        ReloadEnvVars
+
+        # bootstrap environment
+        Invoke-Bootstrap
     }
 
-    # Necessary for 7zip installation, failed on Jenkins for unknown reason. See those issues:
-    # https://github.com/ScoopInstaller/Scoop/issues/460
-    # https://github.com/ScoopInstaller/Scoop/issues/4024
-    ScoopInstall('lessmsi')
-    Invoke-CommandLine -CommandLine "scoop config MSIEXTRACT_USE_LESSMSI $true"
-    # Default installer tools, e.g., dark is required for python
-    ScoopInstall('7zip', 'innounp', 'dark')
-    Invoke-CommandLine -CommandLine "scoop bucket add extras" -StopAtError $false
-    Invoke-CommandLine -CommandLine "scoop bucket add versions" -StopAtError $false
+    if (Test-RunningInCIorTestEnvironment -or $Env:USER_PATH_FIRST) {
+        Initialize-EnvPath
+    }
 
-    Invoke-CommandLine -CommandLine "scoop update"
-    ScoopInstall(Get-Content 'install-mandatory.list')
-    $PipInstaller = "python -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org"
-    Invoke-CommandLine -CommandLine "$PipInstaller poetry"
-    ReloadEnvVars
+    if ($clean) {
+        Remove-Path "build"
+    }
+        
+    Invoke-CommandLine ".venv\Scripts\poetry run python -m pytest"
+    Invoke-CommandLine ".venv\Scripts\poetry build"
+    Invoke-CommandLine ".venv\Scripts\poetry run make --directory doc html"
 }
-
-Invoke-CommandLine -CommandLine "poetry install"
-Invoke-CommandLine -CommandLine "poetry run python -m pytest --verbose --capture=tee-sys"
-Invoke-CommandLine -CommandLine "poetry build"
-Invoke-CommandLine -CommandLine "poetry run make --directory doc html"
-
-Pop-Location
+finally {
+    Pop-Location
+}
+## end of script

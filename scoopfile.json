@@ -1,0 +1,27 @@
+{
+    "buckets": [
+        {
+            "Name": "spl",
+            "Source": "https://github.com/avengineers/spl-bucket"
+        },
+        {
+            "Name": "extras",
+            "Source": "https://github.com/ScoopInstaller/Extras"
+        }
+    ],
+    "apps": [
+        {
+            "Source": "spl",
+            "Name": "mingw-winlibs-llvm-ucrt",
+            "Version": "13.2.0-16.0.6-11.0.0-ucrt-r1"
+        },
+        {
+            "Source": "extras",
+            "Name": "plantuml"
+        },
+        {
+            "Source": "extras",
+            "Name": "umlet"
+        }
+    ]
+}
