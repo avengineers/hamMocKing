@@ -1,8 +1,5 @@
 {
-    "python.testing.pytestArgs": [
-        "tests",
-        "--capture=tee-sys"
-    ],
+    "files.insertFinalNewline": true,
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.formatting.provider": "black",
@@ -30,12 +27,9 @@
         "titleBar.inactiveForeground": "#15202b99",
         "commandCenter.border": "#15202b99"
     },
-    "peacock.color": "#f9e64f",
     "cmake.sourceDirectory": "${workspaceFolder}/tests/data/mini_c_test",
     "cmake.environment": {
-        "poetry_MAX_DEPTH" : "10"
+        "poetry_MAX_DEPTH": "10"
     },
-    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-    "esbonio.sphinx.confDir": "",
-    "cmake.configureOnOpen": false
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

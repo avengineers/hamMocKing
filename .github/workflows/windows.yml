@@ -17,8 +17,11 @@ jobs:
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: install tools, run selftests and create package (w/o deploying)
-        run: .\build.ps1 -installMandatory
+        env:
+          # Workaround to force usage of scoop apps installed in USERPROFILE.
+          USER_PATH_FIRST: 1
+        run: .\build.ps1 -install
         shell: powershell

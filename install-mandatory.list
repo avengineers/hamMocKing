@@ -1,5 +1,0 @@
-cmake
-python311
-mingw-winlibs-llvm-ucrt
-plantuml
-umlet
