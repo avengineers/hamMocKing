@@ -2,11 +2,6 @@
     "files.insertFinalNewline": true,
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "python.formatting.provider": "black",
-    "python.formatting.blackArgs": [
-        "--line-length",
-        "119"
-    ],
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#fbed80",
         "activityBar.activeBorder": "#06b9a5",
@@ -26,10 +21,5 @@
         "titleBar.inactiveBackground": "#f9e64f99",
         "titleBar.inactiveForeground": "#15202b99",
         "commandCenter.border": "#15202b99"
-    },
-    "cmake.sourceDirectory": "${workspaceFolder}/tests/data/mini_c_test",
-    "cmake.environment": {
-        "poetry_MAX_DEPTH": "10"
-    },
-    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+    }
 }
