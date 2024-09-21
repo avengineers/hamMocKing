@@ -1,15 +1,15 @@
-#!/usr/bin/env python3
-
 from typing import List
 from subprocess import Popen, PIPE
 
 """
-Utility functions needed by all test scripts.
+Helper functions to run CMake commands.
 """
 
 
-def run_process(args: List[str], cwd=None):
-    with Popen(args, stdout=PIPE, stderr=PIPE, bufsize=1, universal_newlines=True, cwd=cwd) as p:
+def run_process(args: List[str], cwd=None) -> int:
+    with Popen(
+        args, stdout=PIPE, stderr=PIPE, bufsize=1, universal_newlines=True, cwd=cwd
+    ) as p:
         for line in p.stdout:
             print(line, end="")
         for line in p.stderr:
