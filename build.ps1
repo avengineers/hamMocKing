@@ -4,8 +4,12 @@
 #>
 
 param(
-    [switch]$clean ## clean build, wipe out all build artifacts
-    , [switch]$install ## install mandatory packages
+    [Parameter(Mandatory = $false, HelpMessage = 'Install all dependencies required to build. (Switch, default: false)')]
+    [switch]$install = $false,
+    [Parameter(Mandatory = $false, HelpMessage = 'Build the target.')]
+    [switch]$build = $false,
+    [Parameter(Mandatory = $false, HelpMessage = 'Clean build, wipe out all build artifacts. (Switch, default: false)')]
+    [switch]$clean = $false
 )
 
 function Invoke-CommandLine {
@@ -56,13 +60,6 @@ function Test-RunningInCIorTestEnvironment {
     return [Boolean]($Env:JENKINS_URL -or $Env:PYTEST_CURRENT_TEST -or $Env:GITHUB_ACTIONS)
 }
 
-function Invoke-Bootstrap {
-    # Download bootstrap scripts from external repository
-    Invoke-RestMethod https://raw.githubusercontent.com/avengineers/bootstrap-installer/v1.13.0/install.ps1 | Invoke-Expression
-    # Execute bootstrap script
-    . .\.bootstrap\bootstrap.ps1
-}
-
 function Remove-Path {
     param (
         [Parameter(Mandatory = $true, Position = 0)]
@@ -78,6 +75,13 @@ function Remove-Path {
     }
 }
 
+function Invoke-Bootstrap {
+    # Download bootstrap scripts from external repository
+    Invoke-RestMethod -Uri https://raw.githubusercontent.com/avengineers/bootstrap-installer/v1.14.0/install.ps1 | Invoke-Expression
+    # Execute bootstrap script
+    . .\.bootstrap\bootstrap.ps1
+}
+
 ## start of script
 # Always set the $InformationPreference variable to "Continue" globally,
 # this way it gets printed on execution and continues execution afterwards.
@@ -90,6 +94,10 @@ Push-Location $PSScriptRoot
 Write-Output "Running in ${pwd}"
 
 try {
+    if (Test-RunningInCIorTestEnvironment -or $Env:USER_PATH_FIRST) {
+        Initialize-EnvPath
+    }
+
     if ($install) {
         if ($clean) {
             Remove-Path ".venv"
@@ -97,21 +105,28 @@ try {
 
         # bootstrap environment
         Invoke-Bootstrap
+
+        if (Test-RunningInCIorTestEnvironment -or $Env:USER_PATH_FIRST) {
+            Initialize-EnvPath
+        }
+
+        Write-Host -ForegroundColor Black -BackgroundColor Blue "For installation changes to take effect, please close and re-open your current terminal."
     }
 
-    if (Test-RunningInCIorTestEnvironment -or $Env:USER_PATH_FIRST) {
-        Initialize-EnvPath
-    }
-
-    if ($clean) {
-        Remove-Path "build"
-    }
+    if ($build) {
+        if ($clean) {
+            Remove-Path "build"
+        }
         
-    Invoke-CommandLine ".venv\Scripts\poetry run python -m pytest"
-    Invoke-CommandLine ".venv\Scripts\poetry build"
-    Invoke-CommandLine ".venv\Scripts\poetry run make --directory doc html"
+        Invoke-CommandLine ".venv\Scripts\poetry run python -m pytest"
+        Invoke-CommandLine ".venv\Scripts\poetry build"
+        Invoke-CommandLine ".venv\Scripts\poetry run make --directory doc html"
+    }
 }
 finally {
     Pop-Location
+    if (-Not (Test-RunningInCIorTestEnvironment)) {
+        Read-Host -Prompt "Press Enter to continue ..."
+    }
 }
 ## end of script
