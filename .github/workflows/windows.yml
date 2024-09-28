@@ -23,5 +23,5 @@ jobs:
         env:
           # Workaround to force usage of scoop apps installed in USERPROFILE.
           USER_PATH_FIRST: 1
-        run: .\build.ps1 -install
+        run: .\build.ps1 -install -build
         shell: powershell

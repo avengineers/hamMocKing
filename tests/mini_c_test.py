@@ -1,12 +1,10 @@
-#!/usr/bin/env python3
-
+from pathlib import Path
 from platform import system
 
-from .utils import *
+from .cmake import cmake_configure, cmake_build_target
 
 
 class TestMiniCProject:
-
     def test_build_and_test_mini_c_gmock(self):
         project_dir = "tests/data/mini_c_test"
         build_dir = f"{project_dir}/build"
@@ -26,3 +24,4 @@ class TestMiniCProject:
         exit_code = cmake_build_target(build_dir, "all")
         """CMake build shall be successful. The build includes the unit tests here."""
         assert exit_code == 0
+        assert Path(binary).exists()
